@@ -9,6 +9,27 @@ import org.junit.Test;
 import com.dtcc.awsticker.domain.TickerRow;
 
 public class DaoTickerDynamoDBTest {
+	
+	@Test
+	public void testGetTickerRowsByName() {
+		DaoTickerDynamoDB dao = new DaoTickerDynamoDB();
+		List<TickerRow> tickerRows = dao.getTickerRowsByName("n1");
+		assertNotNull(tickerRows);
+	}
+
+	@Test
+	public void testGetTickerRowsByPriceRange() {
+		DaoTickerDynamoDB dao = new DaoTickerDynamoDB();
+		List<TickerRow> tickerRows = dao.getTickerRowsByPriceRange("0","99");
+		assertNotNull(tickerRows);
+	}
+
+	@Test
+	public void testGetTickerRowsByNumberRange() {
+		DaoTickerDynamoDB dao = new DaoTickerDynamoDB();
+		List<TickerRow> tickerRows = dao.getTickerRowsByNumberRange("0","99");
+		assertNotNull(tickerRows);
+	}
 
 	@Test
 	public void testGetTickerRow() {
@@ -20,7 +41,7 @@ public class DaoTickerDynamoDBTest {
 	@Test
 	public void testPutTickerRow() {
 		DaoTickerDynamoDB dao = new DaoTickerDynamoDB();
-		Integer index = new Integer(0);
+		Integer index = new Integer(3);
 		TickerRow tickerRow = createTestObject(index);
 		dao.putTickerRow(index, tickerRow);
 	}
@@ -28,10 +49,10 @@ public class DaoTickerDynamoDBTest {
 	private TickerRow createTestObject(Integer index) {
 		TickerRow tickerRow = new TickerRow(index);
 		tickerRow.setName("n1");
-		tickerRow.setDate("d1");
-		tickerRow.setNumber("num1");
-		tickerRow.setPrice("p1");
-		tickerRow.setTime("t1");
+		tickerRow.setDate("20011212");
+		tickerRow.setNumber("1");
+		tickerRow.setPrice("2");
+		tickerRow.setTime("20011212180012345");
 		return tickerRow;
 	}
 
