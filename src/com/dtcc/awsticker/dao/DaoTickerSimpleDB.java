@@ -12,6 +12,7 @@ import com.amazonaws.auth.PropertiesCredentials;
 import com.amazonaws.services.simpledb.AmazonSimpleDB;
 import com.amazonaws.services.simpledb.AmazonSimpleDBClient;
 import com.amazonaws.services.simpledb.model.Attribute;
+import com.amazonaws.services.simpledb.model.DeleteAttributesRequest;
 import com.amazonaws.services.simpledb.model.Item;
 import com.amazonaws.services.simpledb.model.PutAttributesRequest;
 import com.amazonaws.services.simpledb.model.ReplaceableAttribute;
@@ -74,8 +75,8 @@ public class DaoTickerSimpleDB implements IDaoTicker {
 		if (items == null || items.isEmpty())
 			return null;
 		Item item = items.get(0);
-
-		TickerRow tr = new TickerRow(index);
+		TickerRow tr = new TickerRow();
+		tr.setIndex(index);
 		
 
 		ItemToModel(item, tr);
@@ -96,10 +97,8 @@ public class DaoTickerSimpleDB implements IDaoTicker {
 			} else if (attribute.getName().equals("Number")) {
 				tr.setNumber(attribute.getValue() + " ");
 			} else if (attribute.getName().equals("Time")) {
-				tr.setTime(attribute.getValue());
-			} else if (attribute.getName().equals("Date")) {
-				tr.setDate(attribute.getValue() + " ");
-			}
+				tr.setDateTime(attribute.getValue());
+			} 
 
 		}
 	}
@@ -113,18 +112,17 @@ public class DaoTickerSimpleDB implements IDaoTicker {
 	public void putTickerRow(Integer index, TickerRow tickerRow) {
 		// LocalTickerTable.put(index, tickerRow);
 		ArrayList<ReplaceableAttribute> attributes = new ArrayList<ReplaceableAttribute>();
-		attributes.add(new ReplaceableAttribute("Date", tickerRow.getDate(),
-				false));
+
 		attributes.add(new ReplaceableAttribute("Name", tickerRow.getName(),
 				false));
 		attributes.add(new ReplaceableAttribute("Number",
 				tickerRow.getNumber(), false));
 		attributes.add(new ReplaceableAttribute("Price", tickerRow.getPrice(),
 				false));
-		attributes.add(new ReplaceableAttribute("Time", tickerRow.getTime(),
+		attributes.add(new ReplaceableAttribute("Time", tickerRow.getDateTime(),
 				false));
 		attributes.add(new ReplaceableAttribute("CreatedTimeMs", ""
-				+ System.currentTimeMillis(), false));
+				+tickerRow.getLastUpdateTime(), false));
 
 		PutAttributesRequest putAttributesRequest = new PutAttributesRequest(
 				myDomain, index + "", attributes);
@@ -140,9 +138,15 @@ public class DaoTickerSimpleDB implements IDaoTicker {
 	 */
 	public List<TickerRow> getAllTickerRows() {
 		//return LocalTickerTable.getAll();
-		List<TickerRow> rows= new ArrayList<TickerRow>();;
 		
 		String selectUserExpression = "select * from `" + myDomain + "`";
+
+		return selectRows(selectUserExpression);
+			
+	}
+
+	private List<TickerRow> selectRows(	String selectUserExpression) {
+		List<TickerRow> rows= new ArrayList<TickerRow>();;
 
 		SelectRequest selectRequest = new SelectRequest(selectUserExpression);
 		List<Item> items = sdb.select(selectRequest).getItems();
@@ -156,14 +160,15 @@ public class DaoTickerSimpleDB implements IDaoTicker {
 				log.warning("bad key "+e);
 			}
 			  
-			TickerRow tr = new TickerRow(index);				
+			TickerRow tr = new TickerRow();
+			tr.setIndex(index);
+						
 			  ItemToModel(item, tr);
 			  rows.add(tr);
 		  }
 
 			  
 		return rows;
-			
 	}
 
 	/*
@@ -192,6 +197,50 @@ public class DaoTickerSimpleDB implements IDaoTicker {
 		// Add one for the next one.
 		nextIndex += 1;
 		return new Integer(nextIndex);
+	}
+
+	/**
+	 * by attribute "Name"
+	 */
+	public List<TickerRow> getTickerRowsByName(String name) {
+		String selectUserExpression = "select * from `" + myDomain + "` where Name= '"+name+"'";
+
+		return selectRows(selectUserExpression);
+	}
+
+	/**
+	 * by attribute "Price" range
+	 */
+	public List<TickerRow> getTickerRowsByPriceRange(String priceFrom,
+			String priceTo) {
+		String selectUserExpression = "select * from `" + myDomain + "` where Price > '"+priceFrom+"' and Price < '"+priceTo+"'";
+
+		return selectRows(selectUserExpression);
+
+	}
+
+	/**
+	 * by attribute "Number" range
+	 */
+	public List<TickerRow> getTickerRowsByNumberRange(String numberFrom,
+			String numberTo) {
+		String selectUserExpression = "select * from `" + myDomain + "` where Number > '"+numberFrom+"' and Number < '"+numberTo+"'";
+
+		return selectRows(selectUserExpression);
+	}
+
+	@Override
+	public List<TickerRow> getTickerRowsByCriteria(TickerRow cr, TickerRow crTo) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void deleteTickerRow(Integer index) {
+        DeleteAttributesRequest request = new DeleteAttributesRequest();
+        request.setDomainName(myDomain);
+        request.setItemName(index.toString());		
+        sdb.deleteAttributes(request);
 	}
 
 }

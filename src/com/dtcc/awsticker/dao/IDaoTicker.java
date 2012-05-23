@@ -16,7 +16,7 @@ public interface IDaoTicker {
 
 	public abstract List<TickerRow> getTickerRowsByCriteria(TickerRow cr,
 			TickerRow crTo);
-
+	
 	public abstract TickerRow getTickerRow(Integer index);
 
 	public abstract void putTickerRow(Integer index, TickerRow tickerRow);
@@ -24,5 +24,7 @@ public interface IDaoTicker {
 	public abstract List<TickerRow> getAllTickerRows();
 
 	public abstract Integer addTickerRow(TickerRow tickerRow);
+
+	public abstract void deleteTickerRow(Integer index);
 
 }

@@ -29,3 +29,4 @@ RCS
 RCSLOG
 SCCS
 _$*
+src/com/dtcc/awsticker/dao/AwsCredentials.properties
